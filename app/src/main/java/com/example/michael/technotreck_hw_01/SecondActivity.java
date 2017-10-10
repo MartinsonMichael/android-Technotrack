@@ -59,15 +59,14 @@ public class SecondActivity extends Activity{
         _timer = new Thread(new Runnable() {
             @Override
             public void run() {
-                _current_time = 1;
                 for (; _current_time < 1000; _current_time++){
-                    if (_is_alive == false){
+                    if (_is_alive == false || Thread.currentThread().isInterrupted()){
                         break;
                     }
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            onTimerTick();
+                            updateText();
                         }
                     });
                     try {
@@ -80,7 +79,7 @@ public class SecondActivity extends Activity{
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        onTimerTick();
+                        updateText();
                     }
                 });
             }
@@ -91,20 +90,25 @@ public class SecondActivity extends Activity{
     private void onTimerButtonClick(){
         _is_alive = !_is_alive;
         setButtonName();
-        tryStartTimer();
+        if (_is_alive) {
+            _current_time = 1;
+            tryStartTimer();
+        }
+        if (!_is_alive){
+            _timer.interrupt();
+        }
     }
 
     private void setButtonName(){
         if (_is_alive){
             _but.setText("Stop");
-            tryStartTimer();
         }
         if (!_is_alive){
             _but.setText("Start");
         }
     }
 
-    private void onTimerTick(){
+    private void updateText(){
         _text.setText(getRusStringFromNum(_current_time));
     }
 
